@@ -1,6 +1,11 @@
 package net.toshayo.waterframes;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.world.GameType;
+import net.minecraft.world.World;
 import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
@@ -68,9 +73,6 @@ public class WFConfig {
     private static boolean keepRendering = true;
     // BEHAVIOR
     private static boolean useLightsOnPlay = true;
-    private static boolean forceLightOnPlay = false;
-    private static boolean useLagTickCorrection = true;
-    private static int lagTickCorrectionWarningThreshold = 60;
     private static boolean useRedstone = true;
     private static boolean useMasterModeOnRedsone = false;
     // REMOTE CONTROL
@@ -120,9 +122,6 @@ public class WFConfig {
             // block_behavior
             config.addCustomCategoryComment("block_behavior", "Configuration related to interactions with vanilla and modded features");
             useLightsOnPlay = config.getBoolean("useLightsOnPlay", "block_behavior", true, "Enable light feature on frames while is playing");
-            forceLightOnPlay = config.getBoolean("forceLightOnPlay", "block_behavior", false, "Forces light feature on frames while is playing. Requires lightOnPlay be true");
-            useLagTickCorrection = config.getBoolean("lagTickCorrection", "block_behavior", true, "Enable lag tick time correction. Helps when server is too laggy and playback is regressing in time. Disable if causes problems");
-            lagTickCorrectionWarningThreshold = config.getInt("lagTickCorrectionWarningThreshold", "block_behavior", 40, 0, Integer.MAX_VALUE, "Amount of ticks skipped that will trigger a warning in server console.");
 
             // redstone
             config.addCustomCategoryComment("redstone", "Redstone interaction options");
@@ -198,18 +197,6 @@ public class WFConfig {
 
     public static boolean useLightOnPlay() {
         return useLightsOnPlay;
-    }
-
-    public static boolean forceLightOnPlay() {
-        return forceLightOnPlay;
-    }
-
-    public static boolean useLagTickCorrection() {
-        return useLagTickCorrection;
-    }
-
-    public static int lagTickCorrectionWarningThreshold() {
-        return lagTickCorrectionWarningThreshold;
     }
 
     // MULTIMEDIA
@@ -331,44 +318,33 @@ public class WFConfig {
     }
 
     public static boolean canInteractBlock(EntityPlayer player) {
-        /*WorldSettings.GameType gameType = (player instanceof EntityPlayerMP)
-                ? ((EntityPlayerMP) player).gameMode.getGameModeForPlayer()
-                : Minecraft.getMinecraft().gameMode.getPlayerMode();
+        GameType gameType = (player instanceof EntityPlayerMP)
+                ? ((EntityPlayerMP) player).interactionManager.getGameType()
+                : Minecraft.getMinecraft().playerController.getCurrentGameType();
 
         if (isAdmin(player)) return true;
-        if (!useInSurv() && gameType.equals(GameType.SURVIVAL)) return false;
-        if (!useInAdv() && gameType.equals(GameType.ADVENTURE)) return false;
+        if (!useInSurv() && gameType == GameType.SURVIVAL) return false;
+        if (!useInAdv() && gameType == GameType.ADVENTURE) return false;
 
-        return useForAnyone();*/
-        return true;
-    }
-
-    public static boolean canInteractItem(EntityPlayer player) {
-        if (isAdmin(player)) {
-            return true;
-        }
         return useForAnyone();
     }
 
-    public static boolean isAdmin(EntityPlayer player) {
-        /*World level = player.worldObj;
+    public static boolean canInteractItem(EntityPlayer player) {
+        return canInteractBlock(player);
+    }
 
-        // OWNER
-        String name = player.getGameProfile().getName();
-        if (name.equals("SrRaapero720") || name.equals("SrRapero720")) {
-            return true;
-        }
+    public static boolean isAdmin(EntityPlayer player) {
+        World level = player.world;
 
         if (level.isRemote) { // validate if was singleplayer and if was the admin
             IntegratedServer integrated = Minecraft.getMinecraft().getIntegratedServer();
             if (integrated != null) {
-                return integrated.isSingleplayerOwner(player.getGameProfile()) || player.hasPermissions(integrated.getOperatorUserPermissionLevel());
+                return integrated.getServerOwner().equals(player.getGameProfile().getName()) || player.canUseCommand(integrated.getOpPermissionLevel(), "");
             } else { // is a guest, check perms
-                return player.hasPermissions(WaterFramesMod.getServerOpPermissionLevel(level));
+                return player.canUseCommand(4, "");
             }
         } else {
-            return player.hasPermissions(player.getServer().getOperatorUserPermissionLevel());
-        }*/
-        return true;
+            return player.canUseCommand(player.getServer() != null ? player.getServer().getOpPermissionLevel() : 4, "");
+        }
     }
 }

@@ -1,33 +1,30 @@
 package net.toshayo.waterframes.proxy;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.toshayo.waterframes.DisplayData;
 import net.toshayo.waterframes.WFConfig;
 import net.toshayo.waterframes.WaterFramesMod;
-import net.toshayo.waterframes.blocks.BigTVBlock;
-import net.toshayo.waterframes.blocks.FrameBlock;
-import net.toshayo.waterframes.blocks.ProjectorBlock;
-import net.toshayo.waterframes.blocks.TVBlock;
-import net.toshayo.waterframes.client.GuiHandler;
+import net.toshayo.waterframes.blocks.*;
 import net.toshayo.waterframes.items.RemoteControlItem;
 import net.toshayo.waterframes.network.PacketDispatcher;
 import net.toshayo.waterframes.network.packets.*;
 import net.toshayo.waterframes.tileentities.*;
 import org.apache.commons.lang3.tuple.Triple;
 
+@Mod.EventBusSubscriber(modid = WaterFramesMod.MOD_ID)
 public class CommonProxy {
     public void preInit(FMLPreInitializationEvent event) throws Exception {
         WFConfig.init(event.getSuggestedConfigurationFile());
@@ -36,71 +33,45 @@ public class CommonProxy {
         WaterFramesMod.TV = new TVBlock();
         WaterFramesMod.BIG_TV = new BigTVBlock();
         WaterFramesMod.PROJECTOR = new ProjectorBlock();
+        WaterFramesMod.TV_BOX = new TVBoxBlock();
 
         WaterFramesMod.REMOTE = new RemoteControlItem();
 
-        GameRegistry.registerBlock(WaterFramesMod.FRAME, WaterFramesMod.FRAME.getUnlocalizedName());
-        GameRegistry.registerBlock(WaterFramesMod.TV, WaterFramesMod.TV.getUnlocalizedName());
-        GameRegistry.registerBlock(WaterFramesMod.BIG_TV, WaterFramesMod.BIG_TV.getUnlocalizedName());
-        GameRegistry.registerBlock(WaterFramesMod.PROJECTOR, WaterFramesMod.PROJECTOR.getUnlocalizedName());
-
-        GameRegistry.registerItem(WaterFramesMod.REMOTE, WaterFramesMod.REMOTE.getUnlocalizedName());
-
-        GameRegistry.registerTileEntity(FrameTileEntity.class, WaterFramesMod.MOD_ID + ":frame");
-        GameRegistry.registerTileEntity(TVTileEntity.class, WaterFramesMod.MOD_ID + ":tv");
-        GameRegistry.registerTileEntity(BigTVTileEntity.class, WaterFramesMod.MOD_ID + ":big_tv");
-        GameRegistry.registerTileEntity(ProjectorTileEntity.class, WaterFramesMod.MOD_ID + ":projector");
+        GameRegistry.registerTileEntity(FrameTileEntity.class, new ResourceLocation(WaterFramesMod.MOD_ID,"frame"));
+        GameRegistry.registerTileEntity(TVTileEntity.class, new ResourceLocation(WaterFramesMod.MOD_ID, "tv"));
+        GameRegistry.registerTileEntity(BigTVTileEntity.class, new ResourceLocation(WaterFramesMod.MOD_ID, "big_tv"));
+        GameRegistry.registerTileEntity(ProjectorTileEntity.class, new ResourceLocation(WaterFramesMod.MOD_ID, "projector"));
+        GameRegistry.registerTileEntity(TVBoxTileEntity.class, new ResourceLocation(WaterFramesMod.MOD_ID, "tv_box"));
 
         PacketDispatcher.registerPackets();
-        NetworkRegistry.INSTANCE.registerGuiHandler(WaterFramesMod.INSTANCE, new GuiHandler());
+    }
 
-        FMLCommonHandler.instance().bus().register(this);
+    @SubscribeEvent
+    public static void onRegistryBlock(RegistryEvent.Register<Block> e) {
+        e.getRegistry().register(WaterFramesMod.FRAME);
+        e.getRegistry().register(WaterFramesMod.TV);
+        e.getRegistry().register(WaterFramesMod.BIG_TV);
+        e.getRegistry().register(WaterFramesMod.PROJECTOR);
+        e.getRegistry().register(WaterFramesMod.TV_BOX);
+    }
+
+    @SubscribeEvent
+    public static void onRegistryItem(RegistryEvent.Register<Item> e) {
+        WaterFramesMod.ITEMS.add(WaterFramesMod.REMOTE);
+        WaterFramesMod.ITEMS.add(new ItemBlock(WaterFramesMod.FRAME).setRegistryName(WaterFramesMod.FRAME.getRegistryName()));
+        WaterFramesMod.ITEMS.add(new ItemBlock(WaterFramesMod.TV).setRegistryName(WaterFramesMod.TV.getRegistryName()));
+        WaterFramesMod.ITEMS.add(new ItemBlock(WaterFramesMod.BIG_TV).setRegistryName(WaterFramesMod.BIG_TV.getRegistryName()));
+        WaterFramesMod.ITEMS.add(new ItemBlock(WaterFramesMod.PROJECTOR).setRegistryName(WaterFramesMod.PROJECTOR.getRegistryName()));
+        WaterFramesMod.ITEMS.add(new ItemBlock(WaterFramesMod.TV_BOX).setRegistryName(WaterFramesMod.TV_BOX.getRegistryName()));
+
+        WaterFramesMod.ITEMS.forEach(e.getRegistry()::register);
     }
 
     public void onInit(FMLInitializationEvent event) {
 
     }
 
-    public void postInit(FMLPostInitializationEvent event) throws Exception {
-        GameRegistry.addShapedRecipe(new ItemStack(WaterFramesMod.BIG_TV),
-                "iIi",
-                "iGi",
-                "iRi",
-                'i', Items.iron_ingot,
-                'I', Blocks.iron_block,
-                'G', Blocks.stained_glass,
-                'R', WaterFramesMod.REMOTE);
-        GameRegistry.addShapedRecipe(new ItemStack(WaterFramesMod.FRAME),
-                "iGi",
-                "iTi",
-                "iSi",
-                'i', Items.iron_ingot,
-                'G', Items.glowstone_dust,
-                'T', Blocks.stained_glass,
-                'S', WaterFramesMod.REMOTE);
-        GameRegistry.addShapedRecipe(new ItemStack(WaterFramesMod.PROJECTOR),
-                "##A",
-                "#GA",
-                "#RA",
-                '#', Blocks.iron_block,
-                'A', Blocks.redstone_lamp,
-                'G', Items.glowstone_dust,
-                'R', WaterFramesMod.REMOTE);
-        GameRegistry.addShapedRecipe(new ItemStack(WaterFramesMod.REMOTE),
-                "ici",
-                "iRi",
-                "SSS",
-                'i', Items.iron_ingot,
-                'c', Items.gold_ingot,
-                'R', Items.redstone,
-                'S', Blocks.stone_button);
-        GameRegistry.addShapedRecipe(new ItemStack(WaterFramesMod.TV),
-                "iii",
-                "iGi",
-                "iRi",
-                'i', Items.iron_ingot,
-                'G', Blocks.stained_glass,
-                'R', WaterFramesMod.REMOTE);
+    public void postInit(FMLPostInitializationEvent event) {
     }
 
     public float deltaFrames() {
@@ -109,7 +80,7 @@ public class CommonProxy {
 
     public DisplayTileEntity getDisplayTileEntityForPacket(AbstractDisplayNetworkPacket packet, MessageContext ctx) {
         try {
-            TileEntity tile = MinecraftServer.getServer().worldServerForDimension(packet.dimId).getTileEntity(packet.posX, packet.posY, packet.posZ);
+            TileEntity tile = ctx.getServerHandler().player.mcServer.getWorld(packet.dimId).getTileEntity(new BlockPos(packet.posX, packet.posY, packet.posZ));
             if (tile instanceof DisplayTileEntity) {
                 return (DisplayTileEntity) tile;
             }
@@ -162,7 +133,7 @@ public class CommonProxy {
         if (tile == null) {
             return;
         }
-        if (!tile.data.hasUri()) {
+        if (tile.data.isUriInvalid()) {
             tile.data.tickMax = -1;
             tile.data.tick = 0;
         } else {
@@ -216,13 +187,8 @@ public class CommonProxy {
         if(displayTile == null) {
             return;
         }
-        DisplayData.sync(displayTile, ctx.getServerHandler().playerEntity, message.nbt);
+        DisplayData.sync(displayTile, ctx.getServerHandler().player, message.nbt);
     }
 
-    @SubscribeEvent
-    public void onTickLast(TickEvent.ServerTickEvent event) {
-        if(event.phase == TickEvent.Phase.END) {
-            DisplayTileEntity.clearLagTickTime();
-        }
-    }
+    public void handlePacket(OpenGuiPacket message, MessageContext ctx) {}
 }

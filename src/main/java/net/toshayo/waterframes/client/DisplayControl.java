@@ -1,12 +1,12 @@
 package net.toshayo.waterframes.client;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class DisplayControl {
@@ -116,7 +116,7 @@ public class DisplayControl {
 
     @SubscribeEvent
     public void onUnloadingLevel(WorldEvent.Unload event) {
-        if (event.world != null && event.world.isRemote) {
+        if (event.getWorld() != null && event.getWorld().isRemote) {
             DisplayControl.release();
         }
     }
@@ -135,8 +135,8 @@ public class DisplayControl {
 
     @SubscribeEvent
     public void onEntityJoin(EntityJoinWorldEvent event) {
-        if(Minecraft.getMinecraft().thePlayer == event.entity) {
-            if (event.world != null && event.world.isRemote) {
+        if(Minecraft.getMinecraft().player == event.getEntity()) {
+            if (event.getWorld() != null && event.getWorld().isRemote) {
                 DisplayControl.release();
             }
         }

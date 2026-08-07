@@ -1,94 +1,64 @@
 package net.toshayo.waterframes.blocks;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.IIcon;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.property.ExtendedBlockState;
+import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.common.property.IUnlistedProperty;
 import net.toshayo.waterframes.WaterFramesMod;
 import net.toshayo.waterframes.tileentities.FrameTileEntity;
 
 public class FrameBlock extends DisplayBlock {
     public static final float THICKNESS = 0.0625F / 2F;
 
-    @SideOnly(Side.CLIENT)
-    private IIcon faceIcon;
-
     public FrameBlock() {
         super();
 
-        setBlockName("frame");
-        setBlockTextureName(WaterFramesMod.MOD_ID + ":frame_back");
-        setCreativeTab(CreativeTabs.tabDecorations);
+        setRegistryName(new ResourceLocation(WaterFramesMod.MOD_ID, "frame"));
+        setUnlocalizedName("frame");
+        setCreativeTab(CreativeTabs.DECORATIONS);
     }
 
     @Override
-    public int onBlockPlaced(World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ, int meta) {
-        return super.onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, meta);
-        //return side;
-    }
-
-    @Override
-    public IIcon getIcon(int side, int meta) {
-        if(side == 5) {
-            side = 4;
-        } else if(side == 4) {
-            side = 5;
-        }
-        if (side == meta) {
-            return faceIcon;
-        }
-        return blockIcon;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void registerBlockIcons(IIconRegister register) {
-        super.registerBlockIcons(register);
-        faceIcon = register.registerIcon(WaterFramesMod.MOD_ID + ":frame_face");
-    }
-
-    @Override
-    public void setBlockBoundsBasedOnState(IBlockAccess world, int x, int y, int z) {
-        switch (world.getBlockMetadata(x, y, z)) {
-            case 0:
-                this.setBlockBounds(0, 1 - THICKNESS, 0, 1, 1, 1);
-                break;
-            case 1:
-                this.setBlockBounds(0, 0, 0, 1, THICKNESS, 1);
-                break;
-            case 2:
-                this.setBlockBounds(0, 0, 1 - THICKNESS, 1, 1, 1);
-                break;
-            case 3:
-                this.setBlockBounds(0, 0, 0, 1, 1, THICKNESS);
-                break;
-            case 4:
-                this.setBlockBounds(0, 0, 0, THICKNESS, 1, 1);
-                break;
-            case 5:
-                this.setBlockBounds(1 - THICKNESS, 0, 0, 1, 1, 1);
-                break;
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+        EnumFacing facing = state.getValue(FACING);
+        switch (facing) {
+            case DOWN:
+                return new AxisAlignedBB(0, 0, 0, 1, THICKNESS, 1);
+            case UP:
+                return new AxisAlignedBB(0, 1 - THICKNESS, 0, 1, 1, 1);
+            case NORTH:
+                return new AxisAlignedBB(0, 0, 0, 1, 1, THICKNESS);
+            case SOUTH:
+                return new AxisAlignedBB(0, 0, 1 - THICKNESS, 1, 1, 1);
+            case WEST:
+                return new AxisAlignedBB(0, 0, 0, THICKNESS, 1, 1);
+            case EAST:
+                return new AxisAlignedBB(1 - THICKNESS, 0, 0, 1, 1, 1);
             default:
-                break;
+                return FULL_BLOCK_AABB;
         }
     }
 
     @Override
-    public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
-        this.setBlockBoundsBasedOnState(world, x, y, z);
-        return super.getCollisionBoundingBoxFromPool(world, x, y, z);
+    public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
+        return getBoundingBox(state, worldIn, pos); // Same as visual bounds
     }
 
     @Override
-    public AxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z) {
-        this.setBlockBoundsBasedOnState(world, x, y, z);
-        return super.getSelectedBoundingBoxFromPool(world, x, y, z);
+    public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World worldIn, BlockPos pos) {
+        return getBoundingBox(state, worldIn, pos).offset(pos);
     }
+
 
     @Override
     public TileEntity createNewTileEntity(World world, int meta) {
@@ -101,7 +71,21 @@ public class FrameBlock extends DisplayBlock {
     }
 
     @Override
-    public int getRenderType() {
-        return -1;
+    protected BlockStateContainer createBlockState() {
+        return new ExtendedBlockState(
+                this,
+                super.createBlockState().getProperties().toArray(new IProperty[0]),
+                new IUnlistedProperty[]{ ExtendedBlockStateProvider.TILE }
+        );
+    }
+
+    @Override
+    public IBlockState getExtendedState(IBlockState blockState, IBlockAccess world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        if (blockState instanceof IExtendedBlockState && te != null) {
+            return ((IExtendedBlockState) blockState).withProperty(ExtendedBlockStateProvider.TILE, te);
+        }
+
+        return blockState;
     }
 }

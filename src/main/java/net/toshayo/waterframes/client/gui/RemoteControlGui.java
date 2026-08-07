@@ -7,6 +7,7 @@ import net.toshayo.waterframes.client.gui.widgets.AbstractWidget;
 import net.toshayo.waterframes.client.gui.widgets.IconButton;
 import net.toshayo.waterframes.tileentities.DisplayTileEntity;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,67 +68,63 @@ public class RemoteControlGui extends GuiScreen {
 
         widgets.add(new IconButton(
                 this, IconStyles.VOLUME_UP,
-                x + 10, y + 10 + fontRendererObj.FONT_HEIGHT * 4, 20, 20,
+                x + 10, y + 10 + fontRenderer.FONT_HEIGHT * 4, 20, 20,
                 button -> tile.volumeUp()
         ));
 
-        IconButton channelUp = new IconButton(
+        widgets.add(new IconButton(
                 this, IconStyles.CHANNEL_UP,
-                x + WIDTH - 30, y + 10 + fontRendererObj.FONT_HEIGHT * 4, 20, 20,
-                button -> tile.prevUri()
-        );
-        channelUp.setEnabled(!this.tile.data.uris.isEmpty());
-        widgets.add(channelUp);
+                x + WIDTH - 30, y + 10 + fontRenderer.FONT_HEIGHT * 4, 20, 20,
+                button -> {}
+        ));
 
         widgets.add(new IconButton(
                 this, IconStyles.VOLUME_DOWN,
-                x + 10, (int)(y + 10 + fontRendererObj.FONT_HEIGHT * 6.5), 20, 20,
+                x + 10, (int)(y + 10 + fontRenderer.FONT_HEIGHT * 6.5), 20, 20,
                 button -> tile.volumeDown()
         ));
 
         widgets.add(new IconButton(
                 this, IconStyles.RELOAD,
-                x + WIDTH / 2 - 10, (int)(y + 10 + fontRendererObj.FONT_HEIGHT * 6.5), 20, 20,
+                x + WIDTH / 2 - 10, (int)(y + 10 + fontRenderer.FONT_HEIGHT * 6.5), 20, 20,
                 button -> {
                     if(tile.imageCache != null) tile.imageCache.reload();
                 }
         ));
 
-        IconButton channelDown = new IconButton(
+        widgets.add(new IconButton(
                 this, IconStyles.CHANNEL_DOWN,
-                x + WIDTH - 30, (int)(y + 10 + fontRendererObj.FONT_HEIGHT * 6.5), 20, 20,
-                button -> tile.nextUri()
-        );
-        channelDown.setEnabled(!this.tile.data.uris.isEmpty());
-        widgets.add(channelDown);
+                x + WIDTH - 30, (int)(y + 10 + fontRenderer.FONT_HEIGHT * 6.5), 20, 20,
+                button -> {}
+        ));
 
         widgets.add(new IconButton(
                 this, IconStyles.PLAY,
-                x + 10, y + 10 + fontRendererObj.FONT_HEIGHT * 10, 20, 20,
+                x + 10, y + 10 + fontRenderer.FONT_HEIGHT * 10, 20, 20,
                 button -> tile.setPause(false)
         ));
 
         widgets.add(new IconButton(
                 this, IconStyles.PAUSE,
-                x + WIDTH / 2 - 10, y + 10 + fontRendererObj.FONT_HEIGHT * 10, 20, 20,
+                x + WIDTH / 2 - 10, y + 10 + fontRenderer.FONT_HEIGHT * 10, 20, 20,
                 button -> tile.setPause(true)
         ));
 
         widgets.add(new IconButton(
                 this, IconStyles.STOP,
-                x + WIDTH - 30, y + 10 + fontRendererObj.FONT_HEIGHT * 10, 20, 20,
+                x + WIDTH - 30, y + 10 + fontRenderer.FONT_HEIGHT * 10, 20, 20,
                 button -> tile.setStop()
         ));
 
         widgets.add(new IconButton(
                 this, IconStyles.FAST_BACKWARD,
-                x + 10, (int)(y + 10 + fontRendererObj.FONT_HEIGHT * 12.5), 20, 20,
+                x + 10, (int)(y + 10 + fontRenderer.FONT_HEIGHT * 12.5), 20, 20,
                 button -> tile.rewind()
         ));
 
         widgets.add(new IconButton(
                 this, IconStyles.FAST_FOWARD,
-                x + WIDTH - 30, (int)(y + 10 + fontRendererObj.FONT_HEIGHT * 12.5), 20, 20,
+                x + WIDTH - 30, (int)(y + 10 + fontRenderer.FONT_HEIGHT * 12.5), 20, 20,
                 button -> tile.fastFoward()
         ));
     }
@@ -139,7 +136,7 @@ public class RemoteControlGui extends GuiScreen {
         drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
 
-        widgets.forEach(widget -> widget.render(fontRendererObj, mouseX, mouseY, partialTicks));
+        widgets.forEach(widget -> widget.render(fontRenderer, mouseX, mouseY, partialTicks));
     }
 
     @Override
@@ -150,7 +147,7 @@ public class RemoteControlGui extends GuiScreen {
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         widgets.stream()
                 .filter(widget -> widget.isMouseHovered(mouseX, mouseY))

@@ -1,7 +1,7 @@
 package net.toshayo.waterframes.network.packets;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import io.netty.buffer.ByteBuf;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public abstract class AbstractDisplayNetworkPacket implements IMessage {
     // display pos

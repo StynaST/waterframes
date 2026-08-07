@@ -1,8 +1,8 @@
 package net.toshayo.waterframes.client.gui.widgets;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.EnumChatFormatting;
 import net.toshayo.waterframes.client.gui.styles.IconStyles;
 
 import java.util.Arrays;
@@ -41,7 +41,7 @@ public class StateButton extends IconButton {
                 I18n.format(icon.tooltipKey + ".1"),
                 I18n.format(
                         icon.tooltipKey + ".2",
-                        EnumChatFormatting.AQUA + I18n.format(icon.tooltipKey + ".states." + state)
+                        ChatFormatting.AQUA + I18n.format(icon.tooltipKey + ".states." + state)
                 )
         );
     }

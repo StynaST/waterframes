@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.init.SoundEvents;
 
 public abstract class AbstractWidget {
     protected final static int GRAY_DISABLED = 0xFF3D3D3D;
@@ -25,7 +25,7 @@ public abstract class AbstractWidget {
     public abstract void render(FontRenderer fontRenderer, int mouseX, int mouseY, float partialTicks);
 
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+        Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
     public void mouseClickMove(int mouseX, int mouseY, int mouseButton, long clickTime) {

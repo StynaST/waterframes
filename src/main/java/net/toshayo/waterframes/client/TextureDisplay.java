@@ -1,21 +1,14 @@
 package net.toshayo.waterframes.client;
 
-import com.xcompwiz.lookingglass.api.view.IWorldView;
-import cpw.mods.fml.common.Loader;
-import net.geforcemods.securitycraft.SecurityCraft;
-import net.geforcemods.securitycraft.compat.lookingglass.LookingGlassAPIProvider;
-import net.geforcemods.securitycraft.tileentity.TileEntitySecurityCamera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundCategory;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Facing;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.Vec3d;
 import net.toshayo.waterframes.WFConfig;
 import net.toshayo.waterframes.WaterFramesMod;
 import net.toshayo.waterframes.tileentities.DisplayTileEntity;
 import org.watermedia.api.image.ImageAPI;
 import org.watermedia.api.image.ImageCache;
-import org.watermedia.api.image.ImageRenderer;
 import org.watermedia.api.math.MathAPI;
 import org.watermedia.api.player.videolan.VideoPlayer;
 import org.watermedia.videolan4j.player.base.State;
@@ -47,24 +40,15 @@ public class TextureDisplay {
     public TextureDisplay(DisplayTileEntity tile) {
         this.tile = tile;
         this.imageCache = tile.imageCache;
-        this.xCoord = tile.xCoord;
-        this.yCoord = tile.yCoord;
-        this.zCoord = tile.zCoord;
-        if(tile.data.getUri().toString().startsWith("camera://")) {
-            displayMode = Mode.CAMERA;
-        } else {
-            if (this.imageCache.isVideo()) {
-                this.switchVideoMode();
-            }
+        this.xCoord = tile.getPos().getX();
+        this.yCoord = tile.getPos().getY();
+        this.zCoord = tile.getPos().getZ();
+        if (this.imageCache.isVideo()) {
+            this.switchVideoMode();
         }
     }
 
     private void switchVideoMode() {
-        if(tile.data.getUri().toString().startsWith("camera://")) {
-            displayMode = Mode.CAMERA;
-            return;
-        }
-
         // DO NOT USE VIDEOLAN IF I DONT WANT
         if (!WFConfig.useMultimedia()) {
             this.imageCache = VLC_NOT_FOUND;
@@ -79,7 +63,7 @@ public class TextureDisplay {
 
         // START
         this.displayMode = Mode.VIDEO;
-        this.mediaPlayer = new VideoPlayer(Minecraft.getMinecraft()::func_152344_a);
+        this.mediaPlayer = new VideoPlayer(Minecraft.getMinecraft()::addScheduledTask);
 
         // CHECK IF VLC CAN BE USED
         if (mediaPlayer.isBroken()) {
@@ -89,9 +73,9 @@ public class TextureDisplay {
             return;
         }
 
-        int x = (int) (xCoord + Facing.offsetsXForSide[this.tile.getBlockMetadata()] * tile.data.audioOffset);
-        int y = (int) (yCoord + Facing.offsetsYForSide[this.tile.getBlockMetadata()] * tile.data.audioOffset);
-        int z = (int) (zCoord + Facing.offsetsZForSide[this.tile.getBlockMetadata()] * tile.data.audioOffset);
+        int x = (int) (xCoord + EnumFacing.getFront(this.tile.getBlockMetadata()).getFrontOffsetX() * -tile.data.audioOffset);
+        int y = (int) (yCoord + EnumFacing.getFront(this.tile.getBlockMetadata()).getFrontOffsetY() * -tile.data.audioOffset);
+        int z = (int) (zCoord + EnumFacing.getFront(this.tile.getBlockMetadata()).getFrontOffsetZ() * -tile.data.audioOffset);
 
         this.currentVolume = limitVolume(x, y, z, this.tile.data.volume, this.tile.data.minVolumeDistance, this.tile.data.maxVolumeDistance);
 
@@ -100,26 +84,34 @@ public class TextureDisplay {
         this.mediaPlayer.setRepeatMode(this.tile.data.loop);
         this.mediaPlayer.setPauseMode(this.tile.data.paused);
         this.mediaPlayer.setMuteMode(this.tile.data.muted);
-        this.mediaPlayer.start(this.tile.data.getUri());
+        this.mediaPlayer.start(this.tile.data.uri);
         DisplayControl.add(this);
     }
 
     public int width() {
-        return switch (displayMode) {
-            case PICTURE -> this.imageCache.getRenderer() != null ? this.imageCache.getRenderer().width : 1;
-            case VIDEO -> this.mediaPlayer.width();
-            case AUDIO -> 0;
-            default -> throw new IllegalArgumentException();
-        };
+        switch (displayMode) {
+            case PICTURE:
+                return this.imageCache.getRenderer() != null ? this.imageCache.getRenderer().width : 1;
+            case VIDEO:
+                return this.mediaPlayer.width();
+            case AUDIO:
+                return 0;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public int height() {
-        return switch (displayMode) {
-            case PICTURE -> this.imageCache.getRenderer() != null ? this.imageCache.getRenderer().height : 1;
-            case VIDEO -> this.mediaPlayer.height();
-            case AUDIO -> 0;
-            default -> throw new IllegalArgumentException();
-        };
+        switch (displayMode) {
+            case PICTURE:
+                return this.imageCache.getRenderer() != null ? this.imageCache.getRenderer().height : 1;
+            case VIDEO:
+                return this.mediaPlayer.height();
+            case AUDIO:
+                return 0;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public int texture() {
@@ -135,42 +127,19 @@ public class TextureDisplay {
                         ) : this.mediaPlayer.texture();
             case AUDIO:
                 return 0;
-            case CAMERA:
-                String cameraPos = tile.data.getUri().toString().substring("camera://".length());
-                if(cameraPos.startsWith("/")) {
-                    cameraPos = cameraPos.substring(1);
-                }
-                String[] cameraPosParts = cameraPos.split(",");
-                try {
-                    TileEntity te = tile.getWorldObj().getTileEntity(
-                            Integer.parseInt(cameraPosParts[0]),
-                            Integer.parseInt(cameraPosParts[1]),
-                            Integer.parseInt(cameraPosParts[2])
-                    );
-                    if(te != null && te.hasWorldObj() && te instanceof TileEntitySecurityCamera) {
-                        // Use same format as SecurityCraft
-                        cameraPos = te.xCoord + " " + te.yCoord + " " + te.zCoord + " " + tile.getWorldObj().provider.dimensionId;
-                        if (SecurityCraft.instance.hasViewForCoords(cameraPos) && Loader.isModLoaded("LookingGlass")) {
-                            return getCameraTexture(cameraPos);
-                        }
-                    }
-                } catch (NumberFormatException ignored) {}
-                return -1;
             default:
                 throw new IllegalArgumentException();
         }
     }
 
-    private int getCameraTexture(String cameraPos) {
-        IWorldView view = SecurityCraft.instance.getViewFromCoords(cameraPos).getView();
-        if (view != null) {
-            if (view.isReady() && view.getTexture() != 0) {
-                view.markDirty();
-                return view.getTexture();
-            }
-            view.markDirty();
+    public void preRender() {
+        switch (displayMode) {
+            case PICTURE:
+                break;
+            case VIDEO:
+                this.mediaPlayer.preRender();
+                break;
         }
-        return -1;
     }
 
     public int getTextureId() {
@@ -182,41 +151,43 @@ public class TextureDisplay {
     }
 
     public long duration() {
-        return switch (displayMode) {
-            case PICTURE -> {
-                ImageRenderer renderer = this.imageCache.getRenderer();
-                if (renderer != null) {
-                    yield renderer.duration == 0 ? 20 * 10 : renderer.duration;
-                } else {
-                    yield 0;
-                }
-            }
-            case VIDEO -> this.mediaPlayer.getDuration();
-            case AUDIO, CAMERA -> 0;
-            default -> throw new IllegalArgumentException();
-        };
+        switch (displayMode) {
+            case PICTURE:
+                return this.imageCache.getRenderer() != null ? this.imageCache.getRenderer().duration : 0;
+            case VIDEO:
+                return this.mediaPlayer.getDuration();
+            case AUDIO:
+                return 0;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public boolean canTick() {
-        return switch (displayMode) {
-            case PICTURE -> this.imageCache.getStatus().equals(ImageCache.Status.READY);
-            case VIDEO -> this.mediaPlayer.isSafeUse() && this.mediaPlayer.isValid();
-            case AUDIO -> // MISSING IMPL
-                    this.mediaPlayer.isSafeUse();
-            case CAMERA -> true;
-            default -> throw new IllegalArgumentException();
-        };
+        switch (displayMode) {
+            case PICTURE:
+                return this.imageCache.getStatus().equals(ImageCache.Status.READY);
+            case VIDEO:
+                return this.mediaPlayer.isSafeUse() && this.mediaPlayer.isValid();
+// MISSING IMPL
+            case AUDIO:
+                return this.mediaPlayer.isSafeUse();
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public boolean canRender() {
-        return switch (displayMode) {
-            case PICTURE ->
-                    (imageCache.getStatus() == ImageCache.Status.READY && !this.imageCache.isVideo() && tile.data.active) || notVideo;
-            case VIDEO -> this.mediaPlayer.isSafeUse() && !this.mediaPlayer.isWaiting() && !this.mediaPlayer.isLoading() && this.mediaPlayer.isReady() && tile.data.active;
-            case AUDIO -> false;
-            case CAMERA -> tile.data.active;
-            default -> throw new IllegalArgumentException();
-        };
+        switch (displayMode) {
+            case PICTURE:
+                return (imageCache.getStatus() == ImageCache.Status.READY && !this.imageCache.isVideo() && tile.data.active) || notVideo;
+            case VIDEO:
+                return this.mediaPlayer.isValid() && tile.data.active;
+            case AUDIO:
+                return false;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public void syncDuration() {
@@ -224,13 +195,6 @@ public class TextureDisplay {
             tile.data.tick = 0;
         }
         tile.syncTime(tile.data.tick, durationInTicks());
-        synced = true;
-    }
-
-    public void forceSeek() {
-        if(mediaPlayer != null) {
-            this.mediaPlayer.seekTo(MathAPI.tickToMs(tile.data.tick));
-        }
     }
 
     public void tick(int x, int y, int z) {
@@ -248,9 +212,9 @@ public class TextureDisplay {
                 if(mediaPlayer.isBroken()) {
                     break;
                 }
-                x += (int) (Facing.offsetsXForSide[tile.getBlockMetadata()] * this.tile.data.audioOffset);
-                y += (int) (Facing.offsetsYForSide[tile.getBlockMetadata()] * this.tile.data.audioOffset);
-                z += (int) (Facing.offsetsZForSide[tile.getBlockMetadata()] * this.tile.data.audioOffset);
+                x += (int) (EnumFacing.getFront(this.tile.getBlockMetadata()).getFrontOffsetX() * -tile.data.audioOffset);
+                y += (int) (EnumFacing.getFront(this.tile.getBlockMetadata()).getFrontOffsetY() * -tile.data.audioOffset);
+                z += (int) (EnumFacing.getFront(this.tile.getBlockMetadata()).getFrontOffsetZ() * -tile.data.audioOffset);
                 int volume = limitVolume(x, y, z, this.tile.data.volume, this.tile.data.minVolumeDistance, this.tile.data.maxVolumeDistance);
 
                 if(!seeking() && seekTime != 0) {
@@ -290,36 +254,11 @@ public class TextureDisplay {
                     }
                 }
                 break;
-            case CAMERA:
-                String cameraPos = tile.data.getUri().toString().substring("camera://".length());
-                if(cameraPos.startsWith("/")) {
-                    cameraPos = cameraPos.substring(1);
-                }
-                String[] cameraPosParts = cameraPos.split(",");
-                try {
-                    TileEntity te = tile.getWorldObj().getTileEntity(
-                            Integer.parseInt(cameraPosParts[0]),
-                            Integer.parseInt(cameraPosParts[1]),
-                            Integer.parseInt(cameraPosParts[2])
-                    );
-                    if(te != null && te.hasWorldObj() && te instanceof TileEntitySecurityCamera) {
-                        // Use same format as SecurityCraft
-                        cameraPos = te.xCoord + " " + te.yCoord + " " + te.zCoord + " " + tile.getWorldObj().provider.dimensionId;
-                        if (!SecurityCraft.instance.hasViewForCoords(cameraPos) && Loader.isModLoaded("LookingGlass")) {
-                            // TODO: handle my version of SecurityCraft camera
-                            // TODO: add resolution customization and aspect ratio based on display width/height
-                            LookingGlassAPIProvider.createLookingGlassView(
-                                    te.getWorldObj(), te.getWorldObj().provider.dimensionId,
-                                    te.xCoord, te.yCoord, te.zCoord,
-                                    192, 192);
-                        }
-                    }
-                } catch (NumberFormatException ignored) {}
-                break;
         }
 
         if (!synced && canRender()) {
             syncDuration();
+            synced = true;
         }
     }
 
@@ -341,40 +280,42 @@ public class TextureDisplay {
         if (this.imageCache.getStatus() != ImageCache.Status.READY) {
             return false;
         }
-        return switch (displayMode) {
-            case PICTURE, CAMERA -> true;
-            case VIDEO, AUDIO -> this.imageCache.getStatus() == ImageCache.Status.READY && this.mediaPlayer.isReady();
-        };
+        switch (displayMode) {
+            case PICTURE:
+                return true;
+            case VIDEO:
+            case AUDIO:
+                return this.imageCache.getStatus() == ImageCache.Status.READY && this.mediaPlayer.isReady();
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public boolean isBuffering() {
-        return switch (displayMode) {
-            case PICTURE, CAMERA -> false;
-            case VIDEO, AUDIO ->
-                    mediaPlayer.isBuffering() || mediaPlayer.isLoading() || mediaPlayer.raw().mediaPlayer().status().state() == State.NOTHING_SPECIAL;
-        };
-    }
-
-    public boolean isBroken() {
-        return switch (displayMode) {
-            case PICTURE -> this.imageCache == null;
-            case VIDEO, AUDIO -> this.mediaPlayer.isBroken();
-            case CAMERA -> false;
-        };
+        switch (displayMode) {
+            case PICTURE:
+                return false;
+            case VIDEO:
+            case AUDIO:
+                return mediaPlayer.isBuffering() || mediaPlayer.isLoading() || mediaPlayer.raw().mediaPlayer().status().state() == State.NOTHING_SPECIAL;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public boolean isNotVideo() {
         if (this.imageCache.getStatus() == ImageCache.Status.FAILED)
             return true;
 
-        return switch (displayMode) {
-            case PICTURE, CAMERA -> false;
-            case VIDEO, AUDIO -> this.mediaPlayer.isBroken();
-        };
-    }
-
-    public boolean isCameraMode() {
-        return displayMode == Mode.CAMERA;
+        switch (displayMode) {
+            case PICTURE:
+                return false;
+            case VIDEO:
+            case AUDIO:
+                return this.mediaPlayer.isBroken();
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public boolean isLoading() {
@@ -382,10 +323,15 @@ public class TextureDisplay {
             return true;
         }
 
-        return switch (displayMode) {
-            case PICTURE, CAMERA -> false;
-            case VIDEO, AUDIO -> this.mediaPlayer.isLoading();
-        };
+        switch (displayMode) {
+            case PICTURE:
+                return false;
+            case VIDEO:
+            case AUDIO:
+                return this.mediaPlayer.isLoading();
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public boolean isReleased() {
@@ -429,12 +375,11 @@ public class TextureDisplay {
     }
 
     public static int limitVolume(int x, int y, int z, int volume, int min, int max) {
-        assert Minecraft.getMinecraft().thePlayer != null;
-        Vec3 position = Minecraft.getMinecraft().thePlayer.getPosition(WaterFramesMod.proxy.deltaFrames());
+        Vec3d position = Minecraft.getMinecraft().player.getPositionEyes(WaterFramesMod.proxy.deltaFrames());
 
-        x -= (int) position.xCoord;
-        y -= (int) position.yCoord;
-        z -= (int) position.zCoord;
+        x -= (int) position.x;
+        y -= (int) position.y;
+        z -= (int) position.z;
         double distance = Math.sqrt(x * x + y * y + z * z);
         if (min > max) {
             int temp = max;
@@ -448,6 +393,6 @@ public class TextureDisplay {
     }
 
     public enum Mode {
-        VIDEO, PICTURE, AUDIO, CAMERA
+        VIDEO, PICTURE, AUDIO
     }
 }

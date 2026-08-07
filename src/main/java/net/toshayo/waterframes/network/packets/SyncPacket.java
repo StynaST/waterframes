@@ -1,11 +1,11 @@
 package net.toshayo.waterframes.network.packets;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.toshayo.waterframes.WaterFramesMod;
 
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class SyncPacket extends AbstractDisplayNetworkPacket {
     public void fromBytes(ByteBuf buf) {
         super.fromBytes(buf);
         try {
-            nbt = new PacketBuffer(buf).readNBTTagCompoundFromBuffer();
+            nbt = new PacketBuffer(buf).readCompoundTag();
         } catch (IOException e) {
             WaterFramesMod.LOGGER.error("Failed to parse NBT of SyncPacket: {}", e.getMessage());
         }
@@ -35,11 +35,7 @@ public class SyncPacket extends AbstractDisplayNetworkPacket {
     @Override
     public void toBytes(ByteBuf buf) {
         super.toBytes(buf);
-        try {
-            new PacketBuffer(buf).writeNBTTagCompoundToBuffer(nbt);
-        } catch (IOException e) {
-            WaterFramesMod.LOGGER.error("Failed to write NBT to SyncPacket: {}", e.getMessage());
-        }
+        new PacketBuffer(buf).writeCompoundTag(nbt);
     }
 
     public static class Handler implements IMessageHandler<SyncPacket, IMessage> {

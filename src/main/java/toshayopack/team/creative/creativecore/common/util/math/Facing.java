@@ -1,11 +1,11 @@
 package toshayopack.team.creative.creativecore.common.util.math;
 
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 
 public enum Facing {
-    DOWN(Axis.Y, false, Vec3.createVectorHelper(0, -1, 0), -1) {
+    DOWN(Axis.Y, false, new Vec3d(0, -1, 0), -1) {
         public Facing opposite() {
             return Facing.UP;
         }
@@ -18,13 +18,8 @@ public enum Facing {
             return bb.minY;
         }
 
-        /*public Vector3f rotation() {
-            return Vector3f.YN;
-        }*/
-
         public AxisAlignedBB set(AxisAlignedBB bb, double value) {
-            bb.minY = value;
-            return bb;
+            return new AxisAlignedBB(bb.minX, value, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
         }
 
         public float get(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
@@ -39,7 +34,7 @@ public enum Facing {
             return minY;
         }
     },
-    UP(Axis.Y, true, Vec3.createVectorHelper(0, 1, 0), -1) {
+    UP(Axis.Y, true, new Vec3d(0, 1, 0), -1) {
         public Facing opposite() {
             return Facing.DOWN;
         }
@@ -52,13 +47,8 @@ public enum Facing {
             return bb.maxY;
         }
 
-        /*public Vector3f rotation() {
-            return Vector3f.YP;
-        }*/
-
         public AxisAlignedBB set(AxisAlignedBB bb, double value) {
-            bb.maxY = value;
-            return bb;
+            return new AxisAlignedBB(bb.minX, bb.minY, bb.minZ, bb.maxX, value, bb.maxZ);
         }
 
         public float get(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
@@ -73,7 +63,7 @@ public enum Facing {
             return maxY;
         }
     },
-    NORTH(Axis.Z, false, Vec3.createVectorHelper(0, 0, -1), 2) {
+    NORTH(Axis.Z, false, new Vec3d(0, 0, -1), 2) {
         public Facing opposite() {
             return SOUTH;
         }
@@ -86,13 +76,8 @@ public enum Facing {
             return bb.minZ;
         }
 
-        /*public Vector3f rotation() {
-            return Vector3f.ZN;
-        }*/
-
         public AxisAlignedBB set(AxisAlignedBB bb, double value) {
-            bb.minZ = value;
-            return bb;
+            return new AxisAlignedBB(bb.minX, bb.minY, value, bb.maxX, bb.maxY, bb.maxZ);
         }
 
         public float get(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
@@ -107,7 +92,7 @@ public enum Facing {
             return minZ;
         }
     },
-    SOUTH(Axis.Z, true, Vec3.createVectorHelper(0, 0, 1), 0) {
+    SOUTH(Axis.Z, true, new Vec3d(0, 0, 1), 0) {
         public Facing opposite() {
             return Facing.NORTH;
         }
@@ -120,13 +105,8 @@ public enum Facing {
             return bb.maxZ;
         }
 
-        /*public Vector3f rotation() {
-            return Vector3f.ZP;
-        }*/
-
         public AxisAlignedBB set(AxisAlignedBB bb, double value) {
-            bb.maxZ = value;
-            return bb;
+            return new AxisAlignedBB(bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, value);
         }
 
         public float get(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
@@ -141,7 +121,7 @@ public enum Facing {
             return maxZ;
         }
     },
-    WEST(Axis.X, false, Vec3.createVectorHelper(-1, 0, 0), 1) {
+    WEST(Axis.X, false, new Vec3d(-1, 0, 0), 1) {
         public Facing opposite() {
             return Facing.EAST;
         }
@@ -154,13 +134,8 @@ public enum Facing {
             return bb.minX;
         }
 
-        /*public Vector3f rotation() {
-            return Vector3f.XN;
-        }*/
-
         public AxisAlignedBB set(AxisAlignedBB bb, double value) {
-            bb.minX = value;
-            return bb;
+            return new AxisAlignedBB(value, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
         }
 
         public float get(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
@@ -175,7 +150,7 @@ public enum Facing {
             return minX;
         }
     },
-    EAST(Axis.X, true, Vec3.createVectorHelper(1, 0, 0), 3) {
+    EAST(Axis.X, true, new Vec3d(1, 0, 0), 3) {
         public Facing opposite() {
             return Facing.WEST;
         }
@@ -188,13 +163,8 @@ public enum Facing {
             return bb.maxX;
         }
 
-        /*public Vector3f rotation() {
-            return Vector3f.XP;
-        }*/
-
         public AxisAlignedBB set(AxisAlignedBB bb, double value) {
-            bb.maxX = value;
-            return bb;
+            return new AxisAlignedBB(bb.minX, bb.minY, bb.minZ, value, bb.maxY, bb.maxZ);
         }
 
         public float get(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
@@ -211,14 +181,10 @@ public enum Facing {
     };
 
     public static final Facing[] VALUES = new Facing[]{DOWN, UP, NORTH, SOUTH, WEST, EAST};
-    public static final Facing[] HORIZONTA_VALUES = new Facing[]{SOUTH, WEST, NORTH, EAST};
-    public static final String[] FACING_NAMES = new String[]{"down", "up", "north", "south", "west", "east"};
-    public static final String[] HORIZONTAL_FACING_NAMES = new String[]{"north", "south", "west", "east"};
     public final String name = this.name().toLowerCase();
     public final Axis axis;
     public final boolean positive;
-    public final Vec3 normal;
-    //public final NormalPlaneF plane;
+    public final Vec3d normal;
     public final int horizontalIndex;
 
     public static Facing get(int index) {
@@ -276,64 +242,12 @@ public enum Facing {
         return var10000;
     }
 
-    public static Facing getHorizontal(int index) {
-        return HORIZONTA_VALUES[index];
-    }
-
-    /*public static Facing direction(Vec3i pos, Vec3i second) {
-        if (pos.getX() == second.getX()) {
-            if (pos.getY() == second.getY()) {
-                return pos.getZ() == second.getZ() + 1 ? SOUTH : NORTH;
-            } else {
-                return pos.getY() == second.getY() + 1 ? UP : DOWN;
-            }
-        } else {
-            return pos.getX() == second.getX() + 1 ? EAST : WEST;
-        }
-    }*/
-
-    public static Facing nearest(Vec3f vec) {
-        return nearest(vec.x, vec.y, vec.z);
-    }
-
-    public static Facing nearest(float x, float y, float z) {
-        if (x == 0.0F && y == 0.0F && z == 0.0F) {
-            return null;
-        } else {
-            Facing facing = null;
-            float distance = Float.MIN_VALUE;
-
-            for (Facing f : VALUES) {
-                float newDistance = x * (float) f.normal.xCoord + y * (float) f.normal.yCoord + z * (float) f.normal.zCoord;
-                if (newDistance > distance) {
-                    distance = newDistance;
-                    facing = f;
-                }
-            }
-
-            return facing;
-        }
-    }
-
-    Facing(Axis axis, boolean positive, Vec3 normal, int horizontalIndex) {
+    Facing(Axis axis, boolean positive, Vec3d normal, int horizontalIndex) {
         this.axis = axis;
         this.positive = positive;
         this.normal = normal;
-        //this.plane = new NormalPlaneF(this);
         this.horizontalIndex = horizontalIndex;
     }
-
-    public int offset() {
-        return this.positive ? 1 : -1;
-    }
-
-    public int offset(Axis axis) {
-        return this.axis == axis ? this.offset() : 0;
-    }
-
-    /*public Component translate() {
-        return Component.translatable("facing." + this.name);
-    }*/
 
     public abstract Facing opposite();
 
@@ -347,79 +261,9 @@ public enum Facing {
         return this.axis.two();
     }
 
-    public Axis getUAxis() {
-        Axis var10000;
-        switch (this.axis) {
-            case X:
-                var10000 = Axis.Z;
-                break;
-            case Y:
-            case Z:
-                var10000 = Axis.X;
-                break;
-            default:
-                var10000 = null;
-        }
-
-        return var10000;
-    }
-
-    public Axis getVAxis() {
-        Axis var10000;
-        switch (this.axis) {
-            case X:
-            case Z:
-                var10000 = Axis.Y;
-                break;
-            case Y:
-                var10000 = Axis.Z;
-                break;
-            default:
-                var10000 = null;
-        }
-
-        return var10000;
-    }
-
-    public float getU(float x, float y, float z) {
-        float var10000;
-        switch (this.axis) {
-            case X:
-                var10000 = z;
-                break;
-            case Y:
-            case Z:
-                var10000 = x;
-                break;
-            default:
-                var10000 = 0.0F;
-        }
-
-        return var10000;
-    }
-
-    public float getV(float x, float y, float z) {
-        float var10000;
-        switch (this.axis) {
-            case X:
-            case Z:
-                var10000 = y;
-                break;
-            case Y:
-                var10000 = z;
-                break;
-            default:
-                var10000 = 0.0F;
-        }
-
-        return var10000;
-    }
-
     public abstract double get(AxisAlignedBB var1);
 
     public abstract AxisAlignedBB set(AxisAlignedBB var1, double var2);
-
-    //public abstract Vector3f rotation();
 
     public abstract float get(float var1, float var2, float var3, float var4, float var5, float var6);
 

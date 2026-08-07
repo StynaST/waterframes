@@ -1,29 +1,31 @@
 package net.toshayo.waterframes;
 
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.*;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.classloading.FMLForgePlugin;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.*;
 import net.toshayo.waterframes.proxy.CommonProxy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Mod(
         modid = WaterFramesMod.MOD_ID,
         name = WaterFramesMod.NAME,
-        version = Tags.VERSION,
+        version = WaterFramesMod.VERSION,
         certificateFingerprint = "ee4beef430d574ba7d8c096a4f7f9c6c755bd30f"
 )
 public class WaterFramesMod {
     public static final String MOD_ID = "waterframes";
     public static final String NAME = "WaterFramesBackported";
+    public static final String VERSION = "1.2.4";
 
     public static final Logger LOGGER = LogManager.getLogger(NAME);
 
@@ -31,9 +33,11 @@ public class WaterFramesMod {
     public static Block TV;
     public static Block BIG_TV;
     public static Block PROJECTOR;
+    public static Block TV_BOX;
     public static Item REMOTE;
 
-    public static final long SYNC_TIME = 2000L;
+    public static final List<Item> ITEMS = new ArrayList<>();
+
 
     @Mod.Instance(MOD_ID)
     public static WaterFramesMod INSTANCE;
@@ -78,32 +82,10 @@ public class WaterFramesMod {
         }
     }
 
-    public static String composeURIString(LinkedList<URI> s) {
-        final StringBuilder sb = new StringBuilder();
-        for (URI uri: s) {
-            sb.append(uri.toString());
-            if (uri != s.getLast()) {
-                sb.append("\n");
-            }
-        }
-        return sb.toString();
-    }
-
-    public static LinkedList<URI> decomposeURIString(String s) {
-        LinkedList<URI> uris = new LinkedList<>();
-        String[] split = s.split("\n");
-        for (String uri: split) {
-            if (uri.isEmpty()) continue;
-            URI u = createURI(uri);
-            if (u != null) uris.add(u);
-        }
-        return uris;
-    }
-
     @SuppressWarnings("unused")
     @Mod.EventHandler
     public static void onFingerPrintViolation(FMLFingerprintViolationEvent event) {
-        if (!event.isDirectory) {
+        if (!event.isDirectory()) {
             System.err.println("A file failed to match with the signing key.");
             System.err.println("If you *know* this is a homebrew/custom build then this is expected, carry on.");
         }

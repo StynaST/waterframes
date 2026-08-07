@@ -1,9 +1,9 @@
 package net.toshayo.waterframes.client.gui.widgets;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.EnumChatFormatting;
 import net.toshayo.waterframes.client.gui.styles.IconStyles;
 import net.toshayo.waterframes.types.PositionHorizontal;
 import net.toshayo.waterframes.types.PositionVertical;
@@ -85,11 +85,11 @@ public class PositionWidget extends IconButton {
                 I18n.format(icon.tooltipKey + ".desc"),
                 I18n.format(
                         icon.tooltipKey + ".horizontal",
-                        EnumChatFormatting.AQUA + I18n.format(icon.tooltipKey + "." + posX.name().toLowerCase())
+                        ChatFormatting.AQUA + I18n.format(icon.tooltipKey + "." + posX.name().toLowerCase())
                 ),
                 I18n.format(
                         icon.tooltipKey + ".vertical",
-                        EnumChatFormatting.AQUA + I18n.format(icon.tooltipKey + "." + posY.name().toLowerCase())
+                        ChatFormatting.AQUA + I18n.format(icon.tooltipKey + "." + posY.name().toLowerCase())
                 )
         );
     }

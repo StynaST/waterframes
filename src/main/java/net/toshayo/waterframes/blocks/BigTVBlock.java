@@ -3,6 +3,7 @@ package net.toshayo.waterframes.blocks;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.toshayo.waterframes.WaterFramesMod;
 import net.toshayo.waterframes.tileentities.BigTVTileEntity;
@@ -14,19 +15,14 @@ public class BigTVBlock extends DisplayBlock {
     public BigTVBlock() {
         super();
 
-        setBlockName("big_tv");
-        setBlockTextureName(WaterFramesMod.MOD_ID + ":frame_back");
-        setCreativeTab(CreativeTabs.tabDecorations);
+        setRegistryName(new ResourceLocation(WaterFramesMod.MOD_ID, "big_tv"));
+        setUnlocalizedName("big_tv");
+        setCreativeTab(CreativeTabs.DECORATIONS);
     }
 
     @Override
     public TileEntity createNewTileEntity(World world, int meta) {
         return new BigTVTileEntity();
-    }
-
-    @Override
-    public int getRenderType() {
-        return -1;
     }
 
     public static AlignedBox box(EnumFacing direction, boolean renderMode) {

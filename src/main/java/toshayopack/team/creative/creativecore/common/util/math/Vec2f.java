@@ -4,9 +4,6 @@ public class Vec2f extends VecNf<Vec2f> {
     public float x;
     public float y;
 
-    public Vec2f() {
-    }
-
     public Vec2f(float x, float y) {
         this.x = x;
         this.y = y;
@@ -38,10 +35,6 @@ public class Vec2f extends VecNf<Vec2f> {
         return 2;
     }
 
-    public Vec2f copy() {
-        return new Vec2f(this.x, this.y);
-    }
-
     public void add(float x, float y) {
         this.x += x;
         this.y += y;
@@ -50,11 +43,6 @@ public class Vec2f extends VecNf<Vec2f> {
     public void add(Vec2f vec) {
         this.x += this.x;
         this.y += this.y;
-    }
-
-    public void sub(float x, float y) {
-        this.x -= x;
-        this.y -= y;
     }
 
     public void sub(Vec2f vec) {
@@ -75,40 +63,14 @@ public class Vec2f extends VecNf<Vec2f> {
         }
     }
 
-    public boolean epsilonEquals(Vec2f var1, float var2) {
-        float var3 = this.x - var1.x;
-        if (Float.isNaN(var3)) {
-            return false;
-        } else if ((var3 < 0.0F ? -var3 : var3) > var2) {
-            return false;
-        } else {
-            var3 = this.y - var1.y;
-            if (Float.isNaN(var3)) {
-                return false;
-            } else {
-                return (var3 < 0.0F ? -var3 : var3) <= var2;
-            }
-        }
-    }
-
     public double distance(Vec2f vec) {
         double x = this.x - vec.x;
         double y = this.y - vec.y;
         return Math.sqrt(x * x + y * y);
     }
 
-    public double distanceSqr(Vec2f vec) {
-        double x = this.x - vec.x;
-        double y = this.y - vec.y;
-        return x * x + y * y;
-    }
-
     public double length() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
-    }
-
-    public double lengthSquared() {
-        return this.x * this.x + this.y * this.y;
     }
 
     public double angle(Vec2f vec) {

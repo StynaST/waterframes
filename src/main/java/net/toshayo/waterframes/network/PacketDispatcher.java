@@ -1,8 +1,8 @@
 package net.toshayo.waterframes.network;
 
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
 import net.toshayo.waterframes.WaterFramesMod;
 import net.toshayo.waterframes.network.packets.*;
 
@@ -34,11 +34,6 @@ public class PacketDispatcher {
         wrapper.registerMessage(RequestDisplayInfoPacket.Handler.class, RequestDisplayInfoPacket.class, i++, Side.CLIENT);
 
         wrapper.registerMessage(SyncPacket.Handler.class, SyncPacket.class, i++, Side.SERVER);
-
-        wrapper.registerMessage(NextPacket.Handler.class, NextPacket.class, i++, Side.SERVER);
-        wrapper.registerMessage(NextPacket.Handler.class, NextPacket.class, i++, Side.CLIENT);
-
-        wrapper.registerMessage(PreviousPacket.Handler.class, PreviousPacket.class, i++, Side.SERVER);
-        wrapper.registerMessage(PreviousPacket.Handler.class, PreviousPacket.class, i++, Side.CLIENT);
+        wrapper.registerMessage(OpenGuiPacket.Handler.class, OpenGuiPacket.class, i++, Side.CLIENT);
     }
 }

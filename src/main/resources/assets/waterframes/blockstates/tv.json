@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": {"model": "waterframes:tv", "y": 180},
+    "facing=south": { "model": "waterframes:tv", "y": 0},
+    "facing=west": {"model": "waterframes:tv", "y": 90},
+    "facing=east": {"model": "waterframes:tv", "y": -90}
+  }
+}

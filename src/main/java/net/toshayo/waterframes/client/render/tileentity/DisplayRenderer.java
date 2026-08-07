@@ -1,10 +1,7 @@
 package net.toshayo.waterframes.client.render.tileentity;
 
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.IModelCustom;
 import net.toshayo.waterframes.WFConfig;
 import net.toshayo.waterframes.WaterFramesMod;
 import net.toshayo.waterframes.client.DisplayControl;
@@ -19,16 +16,17 @@ import toshayopack.team.creative.creativecore.common.util.math.Axis;
 import toshayopack.team.creative.creativecore.common.util.math.BoxFace;
 import toshayopack.team.creative.creativecore.common.util.math.Facing;
 
-public class DisplayRenderer extends TileEntitySpecialRenderer {
+public class DisplayRenderer extends TileEntitySpecialRenderer<DisplayTileEntity> {
     public static final ImageRenderer LOADING_TEX = ImageAPI.loadingGif();
 
     @Override
-    public void renderTileEntityAt(TileEntity tileEntity, double x, double y, double z, float partialTicks) {
-        DisplayTileEntity tile = ((DisplayTileEntity) tileEntity);
+    public void render(DisplayTileEntity tile, double x, double y, double z, float partialTicks, int p_192841_9_, float p_192841_10_) {
         TextureDisplay display = tile.requestDisplay();
         if (display == null || !WFConfig.keepsRendering()) {
             return;
         }
+
+        display.preRender();
 
         // PREPARE RENDERING
         GL11.glPushMatrix();
@@ -47,6 +45,9 @@ public class DisplayRenderer extends TileEntitySpecialRenderer {
 
         GL11.glTranslated(x + 0.5, y + 0.5, z + 0.5);
         GL11.glRotatef(-tile.data.rotation, direction.getFrontOffsetX(), direction.getFrontOffsetY(), direction.getFrontOffsetZ());
+        if(!tile.caps.invertedFace(tile)) {
+            GL11.glRotatef(-180, 0, 1, 0);
+        }
         GL11.glTranslated(-0.5, -0.5, -0.5);
 
         if (direction == EnumFacing.UP || direction == EnumFacing.SOUTH || direction == EnumFacing.EAST) {
@@ -65,7 +66,7 @@ public class DisplayRenderer extends TileEntitySpecialRenderer {
 
         // RENDERING
         final int brightness = tile.data.brightness;
-        this.render(tile, display, box, BoxFace.get(tile.caps.invertedFace(tile) ? facing.opposite() : facing), tile.data.alpha, brightness, brightness, brightness);
+        this.renderI(tile, display, box, BoxFace.get(tile.caps.invertedFace(tile) ? facing.opposite() : facing), tile.data.alpha, brightness, brightness, brightness);
 
         // POST RENDERING
         /*if(blendBackup) {
@@ -80,48 +81,10 @@ public class DisplayRenderer extends TileEntitySpecialRenderer {
         GL11.glPopMatrix();
     }
 
-    protected void renderModel(ResourceLocation texture, IModelCustom model, double x, double y, double z, EnumFacing facing, boolean rotate180) {
-        GL11.glPushMatrix();
-
-        GL11.glTranslated(x, y, z);
-        GL11.glTranslatef(0.5F, 0.5F, 0.5F);
-
-        int angle = 0;
-        switch (facing) {
-            case NORTH:
-                angle = 180;
-                break;
-            case SOUTH:
-                break;
-            case WEST:
-                angle = -90;
-                break;
-            case EAST:
-                angle = 90;
-                break;
-        }
-        if(rotate180) {
-            angle += 180;
-        }
-        GL11.glRotatef(angle, 0, 1, 0);
-
-        boolean cullBackup = GL11.glIsEnabled(GL11.GL_CULL_FACE);
-        GL11.glDisable(GL11.GL_CULL_FACE);
-
-        bindTexture(texture);
-
-        model.renderAll();
-
-        if(cullBackup) {
-            GL11.glEnable(GL11.GL_CULL_FACE);
-        }
-        GL11.glPopMatrix();
-    }
-
-    public void render(DisplayTileEntity tile, TextureDisplay display, AlignedBox box, BoxFace face, int a, int r, int g, int b) {
+    public void renderI(DisplayTileEntity tile, TextureDisplay display, AlignedBox box, BoxFace face, int a, int r, int g, int b) {
         // VAR DECLARE
         final boolean flipX = this.flipX(tile);
-        final boolean flipY = this.flipY(tile) ^ display.isCameraMode();
+        final boolean flipY = this.flipY(tile);
         final boolean front = this.inFront(tile);
         final boolean back = this.inBack(tile);
 

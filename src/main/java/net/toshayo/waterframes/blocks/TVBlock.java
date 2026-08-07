@@ -3,6 +3,7 @@ package net.toshayo.waterframes.blocks;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.toshayo.waterframes.WaterFramesMod;
 import net.toshayo.waterframes.tileentities.TVTileEntity;
@@ -14,9 +15,9 @@ public class TVBlock extends DisplayBlock {
     public TVBlock() {
         super();
 
-        setBlockName("tv");
-        setBlockTextureName(WaterFramesMod.MOD_ID + ":frame_back");
-        setCreativeTab(CreativeTabs.tabDecorations);
+        setRegistryName(new ResourceLocation(WaterFramesMod.MOD_ID, "tv"));
+        setUnlocalizedName("tv");
+        setCreativeTab(CreativeTabs.DECORATIONS);
     }
 
     @Override
@@ -24,19 +25,17 @@ public class TVBlock extends DisplayBlock {
         return new TVTileEntity();
     }
 
-    @Override
-    public int getRenderType() {
-        return -1;
-    }
-
     public static AlignedBox box(EnumFacing direction, EnumFacing attachedBlockFace, boolean renderMode) {
         Facing facing = Facing.get(direction);
         Facing wide = Facing.get(attachedBlockFace);
         AlignedBox box = new AlignedBox();
 
+        // FIXME: re-add tv wall/ceiling attachments
+        attachedBlockFace = EnumFacing.UP;
+
         // SETUP PROFUNDITY
         float renderMargin = renderMode ? 1f : 0;
-        if (EnumFacing.getFront(attachedBlockFace.order_b) == direction) {
+        if (attachedBlockFace.getOpposite() == direction) {
             if (facing.positive) {
                 box.setMax(facing.axis, 1f - (4f / 16.0f));
                 box.setMin(facing.axis, 1f - (6f / 16.0f));
@@ -87,7 +86,7 @@ public class TVBlock extends DisplayBlock {
         } else if (attachedBlockFace == EnumFacing.UP) {
             box.setMax(two, ((24f - renderMargin) / 16f));
             box.setMin(two, (3f + renderMargin) / 16f);
-        } else if (EnumFacing.getFront(attachedBlockFace.order_b) == direction || attachedBlockFace == direction) {
+        } else if (attachedBlockFace.getOpposite() == direction || attachedBlockFace == direction) {
             box.setMax(two, ((19f - renderMargin) / 16f));
             box.setMin(two, (-2f + renderMargin) / 16f);
         } else {
@@ -99,7 +98,7 @@ public class TVBlock extends DisplayBlock {
         if (attachedBlockFace == EnumFacing.DOWN || attachedBlockFace == EnumFacing.UP) {
             box.setMax(one, ((25f - renderMargin) / 16f)); // render: 23
             box.setMin(one, 1 - ((25f - renderMargin) / 16f)); // render: 23
-        } else if (EnumFacing.getFront(attachedBlockFace.order_b) == direction || attachedBlockFace == direction) {
+        } else if (attachedBlockFace.getOpposite() == direction || attachedBlockFace == direction) {
             box.setMax(one, ((25f - renderMargin) / 16f));
             box.setMin(one, 1 - ((25f - renderMargin) / 16f));
         } else {

@@ -18,18 +18,6 @@ public class Vec3f extends VecNf<Vec3f> {
         this(vec.x, vec.y, vec.z);
     }
 
-    /*public Vec3f(Vector3f vec) {
-        this(vec.x(), vec.y(), vec.z());
-    }*/
-
-    public Vec3f(Vec3d vec) {
-        this((float)vec.x, (float)vec.y, (float)vec.z);
-    }
-
-    /*public Vector3d toVanilla() {
-        return new Vector3d((double)this.x, (double)this.y, (double)this.z);
-    }*/
-
     public void set(Vec3f vec) {
         this.x = vec.x;
         this.y = vec.y;
@@ -112,10 +100,6 @@ public class Vec3f extends VecNf<Vec3f> {
         return 3;
     }
 
-    public Vec3f copy() {
-        return new Vec3f(this.x, this.y, this.z);
-    }
-
     public void add(Vec3f vec) {
         this.x += vec.x;
         this.y += vec.y;
@@ -143,29 +127,6 @@ public class Vec3f extends VecNf<Vec3f> {
         }
     }
 
-    public boolean epsilonEquals(Vec3f var1, float var2) {
-        float var3 = this.x - var1.x;
-        if (Float.isNaN(var3)) {
-            return false;
-        } else if ((var3 < 0.0F ? -var3 : var3) > var2) {
-            return false;
-        } else {
-            var3 = this.y - var1.y;
-            if (Float.isNaN(var3)) {
-                return false;
-            } else if ((var3 < 0.0F ? -var3 : var3) > var2) {
-                return false;
-            } else {
-                var3 = this.z - var1.z;
-                if (Float.isNaN(var3)) {
-                    return false;
-                } else {
-                    return (var3 < 0.0F ? -var3 : var3) <= var2;
-                }
-            }
-        }
-    }
-
     public double distance(Vec3f vec) {
         float x = this.x - vec.x;
         float y = this.y - vec.y;
@@ -173,19 +134,8 @@ public class Vec3f extends VecNf<Vec3f> {
         return Math.sqrt(x * x + y * y + z * z);
     }
 
-    public double distanceSqr(Vec3f vec) {
-        float x = this.x - vec.x;
-        float y = this.y - vec.y;
-        float z = this.z - vec.z;
-        return x * x + y * y + z * z;
-    }
-
     public double length() {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-    }
-
-    public double lengthSquared() {
-        return this.x * this.x + this.y * this.y + this.z * this.z;
     }
 
     public double angle(Vec3f vec) {

@@ -1,19 +1,12 @@
 package net.toshayo.waterframes;
 
-import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
-import org.apache.commons.io.IOUtils;
+import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
-@IFMLLoadingPlugin.MCVersion("1.7.10")
+@IFMLLoadingPlugin.MCVersion("1.12.2")
 @IFMLLoadingPlugin.TransformerExclusions({
         "net.toshayo.waterframes.transformers"
 })
@@ -21,7 +14,7 @@ public class WaterFramesPlugin implements IFMLLoadingPlugin {
     public static final Logger LOGGER = LogManager.getLogger("WaterFramesBackportedPlugin");
 
     public WaterFramesPlugin() {
-        final Path jnaLibPath = Paths.get("mods", "waterframes-jna-5.10.0.jar");
+        /*final Path jnaLibPath = Paths.get("mods", "waterframes-jna-5.10.0.jar");
         if(!jnaLibPath.toFile().exists()) {
             LOGGER.info("Extracting JNA library to {}", jnaLibPath.toAbsolutePath());
             try(InputStream is = getClass().getResourceAsStream("/jars/jna-5.10.0.jar")) {
@@ -38,14 +31,14 @@ public class WaterFramesPlugin implements IFMLLoadingPlugin {
                 LOGGER.fatal("Failed to extract JNA library!");
                 throw new RuntimeException(e);
             }
-        }
+        }*/
     }
 
     @Override
     public String[] getASMTransformerClass() {
         return new String[]{
                 "net.toshayo.waterframes.transformers.LibrariesDowngradingTransformer",
-                "net.toshayo.waterframes.transformers.MinecraftServerTransformer"
+                "net.toshayo.waterframes.transformers.WATERMeDIALoadingPreventionTransformer"
         };
     }
 
