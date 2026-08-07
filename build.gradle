@@ -1,0 +1,75 @@
+plugins {
+	id("com.gtnewhorizons.gtnhconvention")
+}
+
+repositories {
+	maven {
+		url = "https://maven.cil.li/"
+	}
+	flatDir {
+		dir 'libs/'
+	}
+}
+
+dependencies {
+	compileOnly "li.cil.oc:OpenComputers:MC1.7.10-1.7.+:api"
+	implementation "li.cil.oc:OpenComputers:MC1.7.10-1.7.+:dev"
+
+	api "maven.modrinth:watermedia:${watermedia_version}"
+	api "maven.modrinth:watermedia-yt-plugin:${watermedia_yt_plugin_version}"
+
+	implementation "net.java.dev.jna:jna:5.10.0"
+	implementation "net.java.dev.jna:jna-platform:5.10.0"
+
+	compileOnly("com.github.GTNewHorizons:lwjgl3ify:${lwjglifyVersion}") {
+		transitive = false
+	}
+	compileOnly("org.lwjgl:lwjgl-opengl:3.3.3")
+	compileOnly("com.github.GTNewHorizons:lwjgl3ify:${lwjglifyVersion}:forgePatches") {
+		transitive = false
+	}
+
+	compileOnly "blank:lookingglass"
+	compileOnly "blank:securitycraft"
+}
+
+jar {
+	manifest {
+		attributes([
+				"Implementation-Title"    : archiveBaseName,
+				"Implementation-Version"  : project.version,
+				"FMLCorePluginContainsFMLMod": "true",
+				"FMLCorePlugin": "net.toshayo.waterframes.WaterFramesPlugin",
+				"Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+				"FMLAT": "waterframes_at.cfg"
+		])
+	}
+}
+
+build {
+	doLast {
+		if(project.hasProperty("TOSHAYO_JKS")) {
+			println "Using Project properties for jar signing."
+			def jks_file = TOSHAYO_JKS
+			def passwd = TOSHAYO_PWD
+			if (jks_file != null && passwd != null) {
+				//noinspection HttpUrlsUsage
+				def exec_line = [
+						"jarsigner",
+						"-sigalg", "SHA256withECDSA",
+						"-digestalg", "SHA-256",
+						"-keystore", jks_file,
+						"-storepass", passwd,
+						"-tsa", "http://timestamp.digicert.com",
+						reobfJar.archiveFile.get(), TOSHAYO_APP_ALIAS
+				].execute()
+				exec_line.waitFor()
+				if(exec_line.exitValue() != 0) {
+					throw new RuntimeException("Signing failed!")
+				}
+			}
+		} else {
+			println 'No signing secrets found, build will not be signed.'
+		}
+	}
+}
